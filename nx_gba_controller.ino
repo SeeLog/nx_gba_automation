@@ -39,26 +39,6 @@ ButtonData buttonList[] = {
   { R_PIN, R, 0x0020 },
 };
 
-//const int hatListNum = 8;
-//HatData hatList[] = {
-//  // Hats
-//  {{ UP_PIN }, { UP }, 0x00, 1},
-//  {{ UP_PIN, RIGHT_PIN }, { UP, RIGHT }, 0x01, 2},
-//  {{ RIGHT_PIN }, { RIGHT }, 0x02, 1},
-//  {{ RIGHT_PIN, DOWN_PIN }, { RIGHT, DOWN }, 0x03, 2},
-//  {{ DOWN_PIN }, { DOWN }, 0x04, 1},
-//  {{ DOWN_PIN, LEFT_PIN }, { DOWN, LEFT }, 0x05, 2},
-//  {{ LEFT_PIN }, { LEFT }, 0x06, 1},
-//  {{ LEFT_PIN, UP_PIN }, { LEFT, UP }, 0x07, 2},
-//};
-//
-//HatData singleHat[] = {
-//  {{ UP_PIN }, { UP }, 0x00, 1},
-//  {{ RIGHT_PIN }, { RIGHT }, 0x02, 1},
-//  {{ DOWN_PIN }, { DOWN }, 0x04, 1},
-//  {{ LEFT_PIN }, { LEFT }, 0x06, 1},
-//};
-
 const int bufSize = 11;
 int timeoutCount = 0;
 int receivedBuffer[bufSize];
