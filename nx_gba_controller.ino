@@ -9,6 +9,8 @@
 #define R_PIN 14
 #define L_PIN 8
 
+#define STICK_THRESHOLD 10
+
 enum Button {
   A, B, SELECT, START, RIGHT, LEFT,
   UP, DOWN, L, R
@@ -83,62 +85,62 @@ void releaseButton(ButtonData data) {
   digitalWrite(data.pinNum, HIGH);
 }
 
-void pressHat(int bData) {
+bool pressHat(int bData) {
   switch(bData) {
     case 0:
       digitalWrite(UP, LOW);
       digitalWrite(RIGHT, HIGH);
       digitalWrite(DOWN, HIGH);
       digitalWrite(LEFT, HIGH);
-      break;
+      return true;
     case 1:
       digitalWrite(UP, LOW);
       digitalWrite(RIGHT, LOW);
       digitalWrite(DOWN, HIGH);
       digitalWrite(LEFT, HIGH);
-      break;
+      return true;
     case 2:
       digitalWrite(UP, HIGH);
       digitalWrite(RIGHT, LOW);
       digitalWrite(DOWN, HIGH);
       digitalWrite(LEFT, HIGH);
-      break;
+      return true;
     case 3:
       digitalWrite(UP, HIGH);
       digitalWrite(RIGHT, LOW);
       digitalWrite(DOWN, LOW);
       digitalWrite(LEFT, HIGH);
-      break;
+      return true;
     case 4:
       digitalWrite(UP, HIGH);
       digitalWrite(RIGHT, HIGH);
       digitalWrite(DOWN, LOW);
       digitalWrite(LEFT, HIGH);
-      break;
+      return true;
     case 5:
       digitalWrite(UP, HIGH);
       digitalWrite(RIGHT, HIGH);
       digitalWrite(DOWN, LOW);
       digitalWrite(LEFT, LOW);
-      break;
+      return true;
     case 6:
       digitalWrite(UP, HIGH);
       digitalWrite(RIGHT, HIGH);
       digitalWrite(DOWN, HIGH);
       digitalWrite(LEFT, LOW);
-      break;
+      return true;
     case 7:
       digitalWrite(UP, LOW);
       digitalWrite(RIGHT, HIGH);
       digitalWrite(DOWN, HIGH);
       digitalWrite(LEFT, LOW);
-      break;
+      return true;
     case 8:
       digitalWrite(UP, HIGH);
       digitalWrite(RIGHT, HIGH);
       digitalWrite(DOWN, HIGH);
       digitalWrite(LEFT, HIGH);
-      break;
+      return false;
   }
 }
 
@@ -160,6 +162,9 @@ void loop() {
     if (dataType == 0xAB) {
       int btnData = receivedBuffer[1] | receivedBuffer[2] << 8;
       int hatData = receivedBuffer[3];
+      int lStickX = receivedBuffer[4] - 0x80;
+      int lStickY = receivedBuffer[5] - 0x80;
+      
       for (int i = 0; i < buttonListNum; i++) {
         ButtonData data = buttonList[i];
         if ((data.data & btnData) > 0) {
@@ -168,7 +173,39 @@ void loop() {
           releaseButton(data);
         }
       }
-      pressHat(hatData);
+      bool hatDetected = pressHat(hatData);
+      if (!hatDetected) {
+        // Convert analog stick signal to hat signal
+        if (lStickX > STICK_THRESHOLD) {
+          // At least to right
+          if (lStickY < -STICK_THRESHOLD) {
+            // +Up
+            pressHat(1);
+          } else if (lStickY > STICK_THRESHOLD) {
+            // +Down
+            pressHat(3);
+          } else {
+            // right only
+            pressHat(2);
+          }
+        } else if (lStickX < -STICK_THRESHOLD) {
+          // At least to left
+          if (lStickY < -STICK_THRESHOLD) {
+            pressHat(7);
+          } else if (lStickY > STICK_THRESHOLD) {
+            pressHat(5);
+          } else {
+            pressHat(6);
+          }
+        } else {
+          // Just up/down
+          if (lStickY < -STICK_THRESHOLD) {
+            pressHat(0);
+          } else if (lStickY > STICK_THRESHOLD) {
+            pressHat(4);
+          }
+        }
+      }
     }
     clearBuffer();
   }
